@@ -13,16 +13,21 @@ class Pagy # :nodoc:
       # Setup the calendar variables
       def setup_unit_vars
         super
-        @initial = new_time(@starting.year, @starting.month)
-        @final   = bump_month(@ending)
-        @pages   = @last = months(@final) - months(@initial)
-        @from    = start_for(@page)
-        @to      = bump_month(@from)
+        @initial   = new_time(@starting.year, @starting.month)
+        @final     = bump_month(@ending)
+        @pages     = @last = months(@final) - months(@initial)
+        @from, @to = filter_for(@page)
       end
 
       # Time for the page
       def start_for(page)
         bump_month(@initial, snap(page))
+      end
+
+      # Filter for the page
+      def filter_for(page)
+        from = start_for(page)
+        [from, bump_month(from)]
       end
 
       private

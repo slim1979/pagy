@@ -10,6 +10,7 @@ class Pagy # :nodoc:
     WEEK = DAY * 7
 
     attr_reader :order
+    attr_writer :counts
 
     # Merge and validate the options, do some simple arithmetic and set a few instance variables
     def initialize(vars) # rubocop:disable Lint/MissingSuper
@@ -40,6 +41,18 @@ class Pagy # :nodoc:
     # Period of the active page (used for nested units)
     def active_period
       [[@starting, @from].max, [@to - DAY, @ending].min] # include only last unit day
+    end
+
+    # Returns a hash of page-number/time-filter for the series or for all the pages in the sequels
+    def filter_series
+      {}.tap do |filter|
+        # :steps and sequels included only when used with *nav_js
+        (@vars.key?(:steps) ? sequels.values.flatten.uniq : series).each do |item|
+          next if item == :gap
+
+          filter[item.to_i] = filter_for(item.to_i)
+        end
+      end
     end
 
     protected

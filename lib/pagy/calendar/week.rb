@@ -15,16 +15,21 @@ class Pagy # :nodoc:
       def setup_unit_vars
         setup_vars(offset: 0)
         super
-        @initial = week_start(@starting)
-        @final   = week_start(@ending) + WEEK
-        @pages   = @last = (@final - @initial).to_i / WEEK
-        @from    = start_for(@page)
-        @to      = @from + WEEK
+        @initial   = week_start(@starting)
+        @final     = week_start(@ending) + WEEK
+        @pages     = @last = (@final - @initial).to_i / WEEK
+        @from, @to = filter_for(@page)
       end
 
       # Time for the page
       def start_for(page)
         @initial + (snap(page) * WEEK)
+      end
+
+      # Filter for the page
+      def filter_for(page)
+        from = start_for(page)
+        [from, from + WEEK]
       end
 
       private

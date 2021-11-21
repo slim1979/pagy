@@ -38,17 +38,19 @@ class Pagy # :nodoc:
           conf[unit][:page_param] = unit_page_param
           conf[unit][:page]       = params[unit_page_param]
         end
-        calendar = {}
-        period   = pagy_calendar_period(collection)
+        calendar   = {}
+        period     = pagy_calendar_period(collection)
+        has_counts = respond_to?(:pagy_calendar_counts)
         units.each_with_index do |unit, index|
-          params_to_delete    = units[(index + 1), units.size].map { |sub| conf[sub][:page_param] } + [page_param]
-          conf[unit][:params] = lambda do |params|  # delete page_param from the sub-units
-                                  params_to_delete.each { |p| params.delete(p.to_s) } # Hash#except missing from 2.5 baseline
-                                  params
-                                end
-          conf[unit][:period] = period
-          calendar[unit]      = Calendar.create(unit, conf[unit])
-          period              = calendar[unit].active_period # set the period for the next unit
+          params_to_delete      = units[(index + 1), units.size].map { |sub| conf[sub][:page_param] } + [page_param]
+          conf[unit][:params]   = lambda do |params|  # delete page_param from the sub-units
+                                    params_to_delete.each { |p| params.delete(p.to_s) } # Hash#except missing from 2.5 baseline
+                                    params
+                                  end
+          conf[unit][:period]   = period
+          calendar[unit]        = Calendar.create(unit, conf[unit])
+          calendar[unit].counts = pagy_calendar_counts(collection, calendar[unit].filter_series) if has_counts
+          period = calendar[unit].active_period # set the period for the next unit
         end
         [calendar, pagy_calendar_filter(collection, calendar[units.last].from, calendar[units.last].to)]
       end
@@ -70,6 +72,15 @@ class Pagy # :nodoc:
                              'collection filtered by a logic equivalent to '\
                              '{storage_time >= from && storage_time < to}'
       end
+
+      # This method may be implemented by the application.
+      # filter_series example:
+      # {1=>[2013-01-01 00:00:00 +0700, 2014-01-01 00:00:00 +0700],
+      #  2=>[2014-01-01 00:00:00 +0700, 2015-01-01 00:00:00 +0700],
+      #  3=>[2015-01-01 00:00:00 +0700, 2016-01-01 00:00:00 +0700],...}
+      # If implemented it should return the count for each filter supplied by the filter_series. e.g:
+      # {1=>23, 2=>0, 3=>15, ...}  (which will be available to the helpers as counts)
+      # pagy_calendar_counts(collection, filter_series)
     end
   end
   Backend.prepend CalendarExtra::Backend

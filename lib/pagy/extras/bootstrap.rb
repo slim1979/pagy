@@ -15,14 +15,18 @@ class Pagy # :nodoc:
       html = +%(<nav#{p_id} class="pagy-bootstrap-nav" aria-label="pager"><ul class="pagination">)
       html << pagy_bootstrap_prev_html(pagy, link)
       pagy.series(**vars).each do |item| # series example: [1, :gap, 7, 8, "9", 10, 11, :gap, 36]
-        html << case item
-                when Integer
-                  %(<li class="page-item">#{link.call item}</li>)
-                when String
-                  %(<li class="page-item active">#{link.call item}</li>)
-                when :gap
-                  %(<li class="page-item gap disabled"><a href="#" class="page-link">#{pagy_t 'pagy.nav.gap'}</a></li>)
-                else raise InternalError, "expected item types in series to be Integer, String or :gap; got #{item.inspect}"
+        html << if item != :gap && pagy.counts && pagy.counts[item.to_i].zero?
+                  %(<li class="page-item disabled"><a href="#" class="page-link">#{pagy.label_for(item)}</a></li>)
+                else
+                  case item
+                  when Integer
+                    %(<li class="page-item">#{link.call item}</li>)
+                  when String
+                    %(<li class="page-item active">#{link.call item}</li>)
+                  when :gap
+                    %(<li class="page-item gap disabled"><a href="#" class="page-link">#{pagy_t 'pagy.nav.gap'}</a></li>)
+                  else raise InternalError, "expected item types in series to be Integer, String or :gap; got #{item.inspect}"
+                  end
                 end
       end
       html << pagy_bootstrap_next_html(pagy, link)

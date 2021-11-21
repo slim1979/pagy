@@ -68,6 +68,10 @@ class PagyCalendarApp < Sinatra::Base
     collection.select_page_of_records(from.utc, to.utc)  # storage in UTC
   end
 
+  def pagy_calendar_counts(_collection, _filter_series)
+    { 1 => 23, 2 => 0, 3 => 23 }
+  end
+
   # Controller action
   get '/' do
     collection = MockCollection::Calendar.new
@@ -77,7 +81,7 @@ class PagyCalendarApp < Sinatra::Base
     # You way want to invert the logic (also in the view) with something like `active: params[:active]`,
     # which would be inactive by default and only active on demand.
     @calendar, @pagy, @records = pagy_calendar(collection, year:   { size: [1, 1, 1, 1] },
-                                                           month:  { size: [0, 12, 12, 0], format: '%b' },
+                                                           # month:  { size: [0, 12, 12, 0], format: '%b' },
                                                            pagy:   { items: 10 },
                                                            active: !params[:skip])
     erb :pagy_demo # template available in the __END__ section as @@ pagy_demo
@@ -119,12 +123,11 @@ __END__
   <!-- calendar navs -->
   <% if @calendar %>
     <%= pagy_bootstrap_nav(@calendar[:year]) %>   <!-- year nav -->
-    <%= pagy_bootstrap_nav(@calendar[:month]) %>  <!-- month nav -->
   <% end %>
 
   <!-- page info extended for the calendar unit -->
   <div class="alert alert-primary" role="alert">
-    <%= pagy_info(@pagy) %><%= " for <b>#{@calendar[:month].label(format: '%B %Y')}</b>" if @calendar %>
+    <%= pagy_info(@pagy) %><%= " for <b>#{@calendar[:year].label(format: '%Y')}</b>" if @calendar %>
   </div>
 
   <!-- page records (time converted in your local time)-->

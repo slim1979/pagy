@@ -24,7 +24,7 @@ class Pagy
               i18n_key:   'pagy.item_name',
               cycle:      false }
 
-  attr_reader :count, :page, :items, :vars, :pages, :last, :offset, :in, :from, :to, :prev, :next, :params
+  attr_reader :count, :page, :items, :vars, :pages, :last, :offset, :in, :from, :to, :prev, :next, :params, :counts
 
   # Merge and validate the options, do some simple arithmetic and set the instance variables
   def initialize(vars)
